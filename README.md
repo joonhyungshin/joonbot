@@ -1,6 +1,5 @@
-JoonBot
+# Joon Bot
 
----
 Slack bot for Joon
 
 ```shell script

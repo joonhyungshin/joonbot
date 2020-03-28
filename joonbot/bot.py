@@ -1,4 +1,5 @@
 import os
+import re
 
 import aiohttp
 
@@ -205,4 +206,143 @@ async def mask(*args, **kwargs):
         store_info_list.append(store_info)
 
     message += '\n'.join(store_info_list)
+    await bot.client.chat_postMessage(channel=channel_id, text=message, as_user=True)
+
+
+@joonbot.command(aliases=['covid19', 'corona', 'coronavirus', '코로나', '신종코로나', '코로나바이러스', '코로나19'])
+async def covid19(*args, **kwargs):
+    """ 준 실시간 코로나바이러스19 전세계 감염 현황 """
+    bot = kwargs['bot']
+    data = kwargs['event']
+    channel_id = data['channel']
+
+    if len(args) > 1:
+        arg = ' '.join(args[1:])
+        try:
+            page = int(arg)
+            country = None
+        except ValueError:
+            page = 1
+            country = arg
+    else:
+        page = 1
+        country = None
+
+    api_url = 'https://coronavirus-monitor.p.rapidapi.com/coronavirus/cases_by_country.php'
+    api_key = os.getenv('RAPIDAPI_KEY')
+
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.get(api_url, headers={
+                'x-rapidapi-host': 'coronavirus-monitor.p.rapidapi.com',
+                'x-rapidapi-key': api_key,
+            }) as resp:
+                resp_json = await resp.json(content_type=None)
+    except aiohttp.ClientError:
+        await bot.client.chat_postMessage(channel=channel_id, text='현재 사용할 수 없는 기능입니다.', as_user=True)
+        return
+
+    stats = sorted(resp_json['countries_stat'], key=lambda c: int(c['cases'].replace(',', '')), reverse=True)
+    num_countries = len(stats)
+
+    if country:
+        for stat in stats:
+            if stat['country_name'] == country:
+                message = '*{}* COVID-19 감염 현황\n'.format(country)
+                message += '*확진*: {}\n'.format(stat['cases'])
+                message += '*사망*: {}\n'.format(stat['deaths'])
+                message += '*완치*: {}\n'.format(stat['total_recovered'])
+                break
+        else:
+            await bot.client.chat_postMessage(channel=channel_id, text='국가를 찾을 수 없습니다.', as_user=True)
+            return
+    else:
+        pagination = 20
+        num_pages = (num_countries - 1) // pagination + 1
+        page = min(max(page, 1), num_pages)
+        start = pagination * (page - 1)
+        end = min(num_countries, pagination * page)
+
+        message = '전세계 COVID-19 감염 현황 (페이지: {} / {})\n'.format(page, num_pages)
+        message += '*주의*: 실시간과 다소 차이가 있을 수 있음\n\n'
+        message += '국가: 확진 / 사망 / 완치\n'
+        message += '----------------------------\n'
+
+        stat_list = []
+        for i in range(start, end):
+            stat = stats[i]
+            stat_list.append('{}: {} / {} / {}'.format(
+                stat['country_name'],
+                stat['cases'],
+                stat['deaths'],
+                stat['total_recovered'],
+            ))
+        message += '\n'.join(stat_list)
+
+    await bot.client.chat_postMessage(channel=channel_id, text=message, as_user=True)
+
+
+@joonbot.command(aliases=['mcstatus', 'mc', 'minecraft', 'mcserver', '마크', '마인크래프트', '마크서버'])
+async def minecraft(*args, **kwargs):
+    """ 마인크래프트 서버 확인 """
+    bot = kwargs['bot']
+    data = kwargs['event']
+    channel_id = data['channel']
+
+    if len(args) < 2:
+        await bot.client.chat_postMessage(channel=channel_id, text='서버 주소를 입력해주세요.', as_user=True)
+        return
+
+    address = args[1]
+    if len(args) >= 3:
+        method = args[2]
+    else:
+        method = 'status'
+
+    m = re.match(r'<.+\|(?P<addr>.+)>$', address)
+    if m:
+        address = m.group('addr')
+        print(address)
+
+    from mcstatus import MinecraftServer
+
+    try:
+        server = MinecraftServer.lookup(address)
+        if method == 'status':
+            status = server.status()
+            message = 'Minecraft server `{}:{}`\n'.format(server.host, server.port)
+            message += '*Version*: {} (protocol {})\n'.format(status.version.name, status.version.protocol)
+            message += '*Description*: {}\n'.format(status.description)
+            message += '*Players online* ({} / {})'.format(status.players.online, status.players.max)
+            player_list = status.players.sample
+            if player_list:
+                message += ':\n'
+                message += '\n'.join(['- {} (`{}`)'.format(player.name, player.id) for player in player_list])
+        elif method == 'ping':
+            latency = server.ping()
+            message = 'Minecraft server `{}:{}`\n'.format(server.host, server.port)
+            message += '*Ping*: {} ms\n'.format(latency)
+        elif method == 'query':
+            query = server.query()
+            message = 'Minecraft server `{}:{}`\n'.format(server.host, server.port)
+            message += '*Software*: {} {}\n'.format(query.software.brand, query.software.version)
+            message += '*Plugins:'
+            if query.software.plugins:
+                message += '\n'.join(['- {}'.format(plugin) for plugin in query.software.plugins])
+            else:
+                message += 'none'
+            message += '\n'
+            message += '*MOTD*: `{}`\n'.format(query.motd)
+            message += '*Players online* ({} / {})'.format(query.players.online, query.players.max)
+            player_list = query.players.names
+            if player_list:
+                message += ':\n'
+                message += '\n'.join(['- {}'.format(name) for name in query.players.names])
+        else:
+            message = 'status, ping, query 중 하나를 입력해 주세요.'
+    except OSError:
+        message = '서버 주소를 찾을 수 없거나 서버가 응답하지 않았습니다.'
+    except ValueError:
+        message = '서버에 오류가 있는 것 같습니다.'
+
     await bot.client.chat_postMessage(channel=channel_id, text=message, as_user=True)

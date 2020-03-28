@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "joonbot"
-version = "0.2.1"
+version = "0.3.0"
 description = "Where is Joon?"
 authors = ["Joonhyung Shin <tonyshin@kaist.ac.kr>"]
 
@@ -9,6 +9,7 @@ python = "^3.6"
 slackclient = "^2.5.0"
 "discord.py" = {extras = ["voice"], version = "^1.3.2"}
 aiohttp = {extras = ["speedups"], version = "^3.6.2"}
+mcstatus = "^2.3.0"
 
 [tool.poetry.dev-dependencies]
 
