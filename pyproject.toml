@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "joonbot"
-version = "0.1.0"
+version = "0.2.1"
 description = "Where is Joon?"
 authors = ["Joonhyung Shin <tonyshin@kaist.ac.kr>"]
 

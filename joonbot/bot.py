@@ -204,6 +204,5 @@ async def mask(*args, **kwargs):
         store_info += '*입고*: {}\n'.format(store.get('stock_at') or '(알 수 없음)')
         store_info_list.append(store_info)
 
-    message += '\n\n'
-    message += '\n\n'.join(store_info_list)
+    message += '\n'.join(store_info_list)
     await bot.client.chat_postMessage(channel=channel_id, text=message, as_user=True)
