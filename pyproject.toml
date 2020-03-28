@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "joonbot"
+version = "0.1.0"
+description = "Where is Joon?"
+authors = ["Joonhyung Shin <tonyshin@kaist.ac.kr>"]
+
+[tool.poetry.dependencies]
+python = "^3.6"
+slackclient = "^2.5.0"
+"discord.py" = {extras = ["voice"], version = "^1.3.2"}
+aiohttp = {extras = ["speedups"], version = "^3.6.2"}
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"

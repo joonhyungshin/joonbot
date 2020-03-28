@@ -1,0 +1,2 @@
+class MessageHandleAborted(Exception):
+    pass
