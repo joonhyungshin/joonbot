@@ -302,7 +302,6 @@ async def minecraft(*args, **kwargs):
     m = re.match(r'<.+\|(?P<addr>.+)>$', address)
     if m:
         address = m.group('addr')
-        print(address)
 
     from mcstatus import MinecraftServer
 
