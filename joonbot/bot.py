@@ -50,7 +50,7 @@ async def unknown_msg(bot, channel, reason, **_):
     else:
         message = '존재하지 않는 커맨드이거나 권한이 없습니다.\n'
     message += '자세한 사용법은 help 커맨드를 통해 확인해 주세요.'
-    bot.send_message(channel=channel, text=message)
+    await bot.send_message(channel=channel, text=message)
 
 
 @joonbot.command(aliases=['echo', '에코'])

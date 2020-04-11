@@ -87,6 +87,8 @@ class ChatBot:
             text = text[len(prefix):]
             args = text.split()
             if not args or not self.has_command(args[0]):
+                print(channel)
+                print('hi')
                 payload['reason'] = self.REASON_NOT_FOUND
                 await self.send_signal(self.INVALID_COMMAND_SIGNAL, payload)
                 return

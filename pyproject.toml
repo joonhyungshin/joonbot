@@ -12,6 +12,7 @@ aiohttp = {extras = ["speedups"], version = "^3.6.2"}
 mcstatus = "^2.3.0"
 
 [tool.poetry.dev-dependencies]
+pytest = "^5.4.1"
 
 [build-system]
 requires = ["poetry>=0.12"]
