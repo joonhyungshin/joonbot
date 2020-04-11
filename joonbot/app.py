@@ -7,6 +7,7 @@ import slack
 from aiohttp import web
 
 from .bot import joonbot
+from .core import DiscordBot
 
 
 class SlackEventHandler:
@@ -91,7 +92,19 @@ async def no_touch(data):
         )
 
 
+async def start_discord_bot(server_app):
+    discord_joonbot = DiscordBot.clone(joonbot, token=os.getenv('DISCORD_BOT_TOKEN'))
+    server_app['discord_bot'] = asyncio.ensure_future(discord_joonbot.start())
+
+
+async def cleanup_discord_bot(server_app):
+    server_app['discord_bot'].cancel()
+    await server_app['discord_bot']
+
+
 app = web.Application()
+app.on_startup.append(start_discord_bot)
+app.on_cleanup.append(cleanup_discord_bot)
 app.add_routes([
     web.post('/slack/events', slack_event_handler.handle_event)
 ])

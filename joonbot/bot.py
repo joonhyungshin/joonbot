@@ -21,59 +21,50 @@ joonbot = SlackBot(
 )
 
 
-@joonbot.pre_command_hook
-async def ignore_bot(*args, **kwargs):
-    bot = kwargs['bot']
-    data = kwargs['event']
-    user_id = data['user']
-    user_info = (await bot.client.users_info(user=user_id))['user']
-    is_bot = user_info['is_bot']
-
-    if is_bot:
+@joonbot.on_signal(SlackBot.PRE_MESSAGE_SIGNAL)
+async def ignore_bot(bot, user, **_):
+    if await bot.is_bot(user):
         raise MessageHandleAborted('bot')
 
 
 @joonbot.command(aliases=['help', '?'])
-async def help_message(*args, **kwargs):
+async def help_message(*args, bot, user, channel, **_):
     """ 이 메세지(도움말)을 보여줍니다."""
-    bot = kwargs['bot']
-    data = kwargs['event']
-    user_id = data['user']
-    channel_id = data['channel']
-
     message = ''
-    sorted_commands = sorted(bot.get_commands(), key=lambda func: func.aliases[0])
+    sorted_commands = sorted(bot.commands, key=lambda func: func.aliases[0])
 
     help_list = args[1:]
 
     for f in sorted_commands:
-        if f.group == '__all__' or user_id in f.group:
+        if f.group == '__all__' or user in f.group:
             if not help_list or set(help_list).intersection(set(f.aliases)):
                 message += '*{}* : {}\n'.format('/'.join(f.aliases), f.__doc__)
 
-    await bot.client.chat_postMessage(channel=channel_id, text=message, as_user=True)
+    await bot.send_message(channel=channel, text=message)
+
+
+@joonbot.on_signal(SlackBot.INVALID_COMMAND_SIGNAL)
+async def unknown_msg(bot, channel, reason, **_):
+    if reason == SlackBot.REASON_INVALID_ARGUMENT:
+        message = '잘못된 사용법입니다.\n'
+    else:
+        message = '존재하지 않는 커맨드이거나 권한이 없습니다.\n'
+    message += '자세한 사용법은 help 커맨드를 통해 확인해 주세요.'
+    bot.send_message(channel=channel, text=message)
 
 
 @joonbot.command(aliases=['echo', '에코'])
-async def echo(*args, **kwargs):
+async def echo(*args, bot, channel, **_):
     """ 흔한 echo """
-    bot = kwargs['bot']
-    data = kwargs['event']
-    channel_id = data['channel']
-
     revised_text = ' '.join(args[1:])
-    await bot.client.chat_postMessage(channel=channel_id, text=revised_text, as_user=True)
+    await bot.send_message(channel=channel, text=revised_text)
 
 
 @joonbot.command(aliases=['dust', '미세먼지'])
-async def air_pollution(*args, **kwargs):
+async def air_pollution(*args, bot, channel, **_):
     """ 실시간 미세먼지 정보 / Usage: _미세먼지 측정소_"""
-    bot = kwargs['bot']
-    data = kwargs['event']
-    channel_id = data['channel']
-
     if len(args) == 1:
-        await bot.client.chat_postMessage(channel=channel_id, text='측정소를 입력해 주세요.', as_user=True)
+        await bot.send_message(channel=channel, text='측정소를 입력해 주세요.')
         return
 
     station = args[1]
@@ -94,7 +85,7 @@ async def air_pollution(*args, **kwargs):
             }) as resp:
                 resp_json = await resp.json(content_type=None)
     except aiohttp.ClientError:
-        await bot.client.chat_postMessage(channel=channel_id, text='현재 사용할 수 없는 기능입니다.', as_user=True)
+        await bot.send_message(channel=channel, text='현재 사용할 수 없는 기능입니다.')
         return
 
     air_level = [
@@ -128,7 +119,7 @@ async def air_pollution(*args, **kwargs):
         else:
             message = '해당 측정소가 존재하지 않습니다'
 
-    await bot.client.chat_postMessage(channel=channel_id, text=message, as_user=True)
+    await bot.send_message(channel=channel, text=message)
 
 
 # 마스크 대란 해소로 커맨드 삭제
@@ -140,10 +131,9 @@ async def mask(*args, **kwargs):
     channel_id = data['channel']
 
     if len(args) <= 2:
-        await bot.client.chat_postMessage(
+        await bot.send_message(
             channel=channel_id,
             text='주소를 구체적으로 입력해 주세요.',
-            as_user=True
         )
         return
 
@@ -211,12 +201,8 @@ async def mask(*args, **kwargs):
 
 
 @joonbot.command(aliases=['covid19', 'corona', 'coronavirus', '코로나', '신종코로나', '코로나바이러스', '코로나19'])
-async def covid19(*args, **kwargs):
+async def covid19(*args, bot, channel, **_):
     """ 준 실시간 코로나바이러스19 전세계 감염 현황 """
-    bot = kwargs['bot']
-    data = kwargs['event']
-    channel_id = data['channel']
-
     if len(args) > 1:
         arg = ' '.join(args[1:])
         try:
@@ -240,7 +226,7 @@ async def covid19(*args, **kwargs):
             }) as resp:
                 resp_json = await resp.json(content_type=None)
     except aiohttp.ClientError:
-        await bot.client.chat_postMessage(channel=channel_id, text='현재 사용할 수 없는 기능입니다.', as_user=True)
+        await bot.send_message(channel=channel, text='현재 사용할 수 없는 기능입니다.')
         return
 
     stats = sorted(resp_json['countries_stat'], key=lambda c: int(c['cases'].replace(',', '')), reverse=True)
@@ -255,7 +241,7 @@ async def covid19(*args, **kwargs):
                 message += '*완치*: {}\n'.format(stat['total_recovered'])
                 break
         else:
-            await bot.client.chat_postMessage(channel=channel_id, text='국가를 찾을 수 없습니다.', as_user=True)
+            await bot.send_message(channel=channel, text='국가를 찾을 수 없습니다.')
             return
     else:
         pagination = 20
@@ -280,18 +266,14 @@ async def covid19(*args, **kwargs):
             ))
         message += '\n'.join(stat_list)
 
-    await bot.client.chat_postMessage(channel=channel_id, text=message, as_user=True)
+    await bot.send_message(channel=channel, text=message)
 
 
 @joonbot.command(aliases=['mcstatus', 'mc', 'minecraft', 'mcserver', '마크', '마인크래프트', '마크서버'])
-async def minecraft(*args, **kwargs):
+async def minecraft(*args, bot, channel, **_):
     """ 마인크래프트 서버 확인 """
-    bot = kwargs['bot']
-    data = kwargs['event']
-    channel_id = data['channel']
-
     if len(args) < 2:
-        await bot.client.chat_postMessage(channel=channel_id, text='서버 주소를 입력해주세요.', as_user=True)
+        await bot.send_message(channel=channel, text='서버 주소를 입력해주세요.')
         return
 
     address = args[1]
@@ -345,4 +327,4 @@ async def minecraft(*args, **kwargs):
     except ValueError:
         message = '서버에 오류가 있는 것 같습니다.'
 
-    await bot.client.chat_postMessage(channel=channel_id, text=message, as_user=True)
+    await bot.send_message(channel=channel, text=message)
