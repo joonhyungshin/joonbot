@@ -64,7 +64,8 @@ slack_event_handler = SlackEventHandler()
 slack_event_handler.register_handler('message', joonbot.message_handler)
 
 
-@slack_event_handler.on('reaction_added')
+# 슬랙 버그로 인해 커맨드 삭제
+# @slack_event_handler.on('reaction_added')
 async def no_touch(data):
     client = slack.WebClient(token=os.getenv('SLACK_API_TOKEN'), run_async=True)
     reaction = data['event']['reaction']

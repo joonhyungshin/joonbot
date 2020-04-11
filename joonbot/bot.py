@@ -131,7 +131,8 @@ async def air_pollution(*args, **kwargs):
     await bot.client.chat_postMessage(channel=channel_id, text=message, as_user=True)
 
 
-@joonbot.command(aliases=['mask', '마스크', '마스크정보'])
+# 마스크 대란 해소로 커맨드 삭제
+# @joonbot.command(aliases=['mask', '마스크', '마스크정보'])
 async def mask(*args, **kwargs):
     """ 실시간 마스크 판매 현황 """
     bot = kwargs['bot']
