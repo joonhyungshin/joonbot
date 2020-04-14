@@ -105,7 +105,7 @@ async def start_discord_bot(server_app):
             message += '우선 #자기소개 채널에서 간단하게 소개 부탁드릴게요...!\n'
             message += '이곳이 어떤 곳인지 궁금하시다면 아래 채널을 방문해 보세요!\n'
             message += '#일반 - 잡담 채널\n'
-            message += '#채망 - 조금은 시끄러운 잡담 채널\n'
+            message += '#채망 - 조금은 시끄러워도 되는 잡담 채널\n'
             message += '#조합최적화 - Joon과 함께하는 조합최적화 스터디 채널\n'
             message += '#마인크래프트 - 마인크래프트를 즐기는 채널'
 
