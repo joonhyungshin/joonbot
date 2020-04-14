@@ -94,6 +94,23 @@ async def no_touch(data):
 
 async def start_discord_bot(server_app):
     discord_joonbot = DiscordBot.clone(joonbot, token=os.getenv('DISCORD_BOT_TOKEN'))
+
+    @discord_joonbot.client.event
+    async def on_member_join(member):
+        guild = member.guild
+        general = guild.system_channel
+        if general is not None:
+            message = '{} 님, Joon\'s Dreamyard에 오신 것을 환영합니다! '.format(member.mention)
+            message += '이 서버는 Joon의 네트워크를 중심으로 만들어진 네트워킹 서버에요. '
+            message += '우선 #자기소개 채널에서 간단하게 소개 부탁드릴게요...!\n'
+            message += '이곳이 어떤 곳인지 궁금하시다면 아래 채널을 방문해 보세요!\n'
+            message += '#일반 - 잡담 채널\n'
+            message += '#채망 - 조금은 시끄러운 잡담 채널\n'
+            message += '#조합최적화 - Joon과 함께하는 조합최적화 스터디 채널\n'
+            message += '#마인크래프트 - 마인크래프트를 즐기는 채널'
+
+            general.send(message)
+
     server_app['discord_bot'] = asyncio.ensure_future(discord_joonbot.start())
 
 

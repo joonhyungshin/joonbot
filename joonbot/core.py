@@ -266,3 +266,7 @@ class DiscordBot(ChatBot):
             await self.client.start(self._token)
         except asyncio.CancelledError:
             await self.client.logout()
+
+    @staticmethod
+    def mention(user):
+        return user.mention
