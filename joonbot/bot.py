@@ -1,4 +1,5 @@
 import os
+import random
 import re
 
 import aiohttp
@@ -328,3 +329,27 @@ async def minecraft(*args, bot, channel, **_):
         message = '서버에 오류가 있는 것 같습니다.'
 
     await bot.send_message(channel=channel, text=message)
+
+
+@joonbot.command(aliases=['hello', 'hi', '하이', 'ㅎㅇ', '안녕', '안뇽'])
+async def hello(*_, bot, channel, **__):
+    """ 준봇에게 인사합니다. """
+    messages = [
+        'ㅎㅇㅎㅇ',
+        '안녕하세요! 저는 준봇이에요.',
+        '준봇 여기있습니다!',
+        '부르셨나요?',
+        'ㅎㅇ',
+        'no',
+        '하위^^',
+    ]
+
+    await bot.send_message(channel=channel, text=random.choice(messages))
+
+
+@joonbot.command(aliases=['version', '버전'])
+async def bot_version(*_, bot, channel, **__):
+    """ 준봇의 버전을 확인합니다. """
+    from . import __version__
+
+    await bot.send_message(channel=channel, text='joonbot {}'.format(__version__))

@@ -106,7 +106,7 @@ class ChatBot:
 
             try:
                 res = await cmd(*args, **payload)
-            except TypeError:
+            except TypeError as e:
                 payload['reason'] = self.REASON_INVALID_ARGUMENT
                 await self.send_signal(self.INVALID_COMMAND_SIGNAL, payload)
                 return
@@ -266,6 +266,9 @@ class DiscordBot(ChatBot):
             await self.client.start(self._token)
         except asyncio.CancelledError:
             await self.client.logout()
+
+    async def is_bot(self, user, **_):
+        return user.bot
 
     @staticmethod
     def mention(user):
