@@ -97,19 +97,32 @@ async def start_discord_bot(server_app):
 
     @discord_joonbot.client.event
     async def on_member_join(member):
+        if member.bot:
+            return
+
         guild = member.guild
         general = guild.system_channel
+
         if general is not None:
+            introduce_channel = guild.get_channel(699213780340703264)
+            destroyed_channel = guild.get_channel(698538436684021800)
+            comb_optim_channel = guild.get_channel(698541739799085077)
+            minecraft_channel = guild.get_channel(698104026876608572)
+
             message = '{} 님, Joon\'s Dreamyard에 오신 것을 환영합니다! '.format(member.mention)
             message += '이 서버는 Joon의 네트워크를 중심으로 만들어진 네트워킹 서버에요. '
-            message += '우선 #자기소개 채널에서 간단하게 소개 부탁드릴게요...!\n'
+            if introduce_channel is not None:
+                message += '우선 {} 채널에서 간단하게 소개 부탁드릴게요...!\n'.format(introduce_channel.mention)
             message += '이곳이 어떤 곳인지 궁금하시다면 아래 채널을 방문해 보세요!\n'
-            message += '#일반 - 잡담 채널\n'
-            message += '#채망 - 조금은 시끄러워도 되는 잡담 채널\n'
-            message += '#조합최적화 - Joon과 함께하는 조합최적화 스터디 채널\n'
-            message += '#마인크래프트 - 마인크래프트를 즐기는 채널'
+            message += '{} - 잡담 채널\n'.format(general.mention)
+            if destroyed_channel is not None:
+                message += '{} - 조금은 시끄러워도 되는 잡담 채널\n'.format(destroyed_channel.mention)
+            if comb_optim_channel is not None:
+                message += '{} - Joon과 함께하는 조합최적화 스터디 채널\n'.format(comb_optim_channel.mention)
+            if minecraft_channel is not None:
+                message += '{} - 마인크래프트를 즐기는 채널'.format(minecraft_channel.mention)
 
-            general.send(message)
+            await general.send(message)
 
     server_app['discord_bot'] = asyncio.ensure_future(discord_joonbot.start())
 
