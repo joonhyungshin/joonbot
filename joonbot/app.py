@@ -118,7 +118,10 @@ async def start_discord_bot(server_app):
             if destroyed_channel is not None:
                 message += '{} - 조금은 시끄러워도 되는 잡담 채널\n'.format(destroyed_channel.mention)
             if comb_optim_channel is not None:
-                message += '{} - Joon과 함께하는 조합최적화 스터디 채널\n'.format(comb_optim_channel.mention)
+                message += '{} - {} 과 함께하는 조합최적화 스터디 채널\n'.format(
+                    comb_optim_channel.mention,
+                    guild.owner.mention
+                )
             if minecraft_channel is not None:
                 message += '{} - 마인크래프트를 즐기는 채널'.format(minecraft_channel.mention)
 
