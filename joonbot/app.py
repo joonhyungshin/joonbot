@@ -109,7 +109,7 @@ async def start_discord_bot(server_app):
             comb_optim_channel = guild.get_channel(698541739799085077)
             minecraft_channel = guild.get_channel(698104026876608572)
 
-            message = '{} 님, Joon\'s Dreamyard에 오신 것을 환영합니다! '.format(member.mention)
+            message = '{} 님, {}에 오신 것을 환영합니다! '.format(member.mention, guild.name)
             message += '이 서버는 Joon의 네트워크를 중심으로 만들어진 네트워킹 서버에요. '
             if introduce_channel is not None:
                 message += '우선 {} 채널에서 간단하게 소개 부탁드릴게요...!\n'.format(introduce_channel.mention)
